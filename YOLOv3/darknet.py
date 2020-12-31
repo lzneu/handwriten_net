@@ -261,6 +261,7 @@ class DarkNet(nn.Module):
                     bn_running_mean = torch.from_numpy(weights[ptr: ptr+num_bn_biases])
                     ptr += num_bn_biases
                     bn_running_var = torch.from_numpy(weights[ptr: ptr+num_bn_biases])
+                    ptr += num_bn_biases
                     
                     bn_biases = bn_biases.view_as(bn.bias.data)
                     bn_weights = bn_weights.view_as(bn.weight.data)
@@ -274,11 +275,11 @@ class DarkNet(nn.Module):
                 # 如果不存在bn层，直接load 卷积层bias即可
                 else:
                     num_biases = conv.bias.numel()
-                    conv_bias = torch.from_numpy(weights[ptr: ptr+num_biases])
+                    conv_biases = torch.from_numpy(weights[ptr: ptr+num_biases])
                     ptr += num_biases
 
-                    conv_bias = conv_bias.view_as(conv.bias.data)
-                    conv.bias.data.copy_(conv_bias)
+                    conv_biases = conv_biases.view_as(conv.bias.data)
+                    conv.bias.data.copy_(conv_biases)
 
                 # 加载convolutional的weights
                 num_weights = conv.weight.numel()
@@ -304,8 +305,9 @@ if __name__ == "__main__":
     device = torch.device('cuda')
     inp = get_test_input()
     model = DarkNet(cfgfile='./cfg/yolov3.cfg')
-    model.load_weights('./weights/yolov3.weights')
+    model.load_weights('../weights/yolov3.weights')
     model = model.to(device)
+    print(inp)
     pred = model(inp.to(device), True)
     print(pred.size())
     print(pred)
